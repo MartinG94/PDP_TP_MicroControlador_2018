@@ -41,3 +41,8 @@ str unaPosición unValor micro = (nop . nuevaMemoria ((take (unaPosición - 1) (
 
 lod :: Posición -> Instrucción
 lod unaPosición micro = (nop . nuevoAcum_A ( (!!) (memoria micro) (unaPosición - 1) )) micro
+
+divide :: Instrucción
+divide micro
+  | (not . (==0) . acumulador_B) micro = (nop . nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro `div` acumulador_B micro)) micro
+  | otherwise = error "DIVISION BY ZERO"
