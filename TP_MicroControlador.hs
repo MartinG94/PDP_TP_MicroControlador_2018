@@ -33,3 +33,8 @@ swap micro = (nop . nuevoAcum_A (acumulador_B micro) . nuevoAcum_B (acumulador_A
 
 add :: Instrucción
 add micro = (nop . nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro + acumulador_B micro)) micro
+
+type Posición = Int
+
+str :: Posición -> Int -> Instrucción
+str unaPosición unValor micro = nuevaMemoria (((take (unaPosición -1) (memoria micro)) ++ [unValor] ++ (drop unaPosición (memoria micro)))) micro
