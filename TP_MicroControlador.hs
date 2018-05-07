@@ -9,7 +9,7 @@ data MicroControlador = MicroControlador {
   acumulador_A :: Int,
   acumulador_B :: Int,
   programCounter :: Int,
-  etiqueta :: String
+  mensajeError :: String
 } deriving(Show,Eq)
 
 nuevaMemoria otraMemoria microControlador = microControlador {memoria = otraMemoria}
@@ -18,15 +18,15 @@ nuevoAcum_B otroAcum_B microControlador = microControlador {acumulador_B = otroA
 nuevoProgramCounter otroPC microControlador = microControlador {programCounter = otroPC}
 nuevaEtiqueta otraEtiqueta microControlador = microControlador {etiqueta = otraEtiqueta}
 
-xT8088 = MicroControlador [] 0 0 0 ""
+xt8088 = MicroControlador [] 0 0 0 ""
 
 type Instrucción = MicroControlador -> MicroControlador
 
 nop :: Instrucción
 nop micro = nuevoProgramCounter (programCounter micro + 1) micro
 
-lovd :: Int -> Instrucción
-lovd unValor micro = (nop . nuevoAcum_A unValor) micro
+lodv :: Int -> Instrucción
+lodv unValor micro = (nop . nuevoAcum_A unValor) micro
 
 swap :: Instrucción
 swap micro = (nop . nuevoAcum_A (acumulador_B micro) . nuevoAcum_B (acumulador_A micro)) micro
@@ -46,3 +46,6 @@ divide :: Instrucción
 divide micro
   | (not . (==0) . acumulador_B) micro = (nop . nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro `div` acumulador_B micro)) micro
   | otherwise = error "DIVISION BY ZERO"
+
+fp20 = MicroControlador [] 7 24 0 ""
+at8086 = MicroControlador [1.. 20] 0 0 0 ""
