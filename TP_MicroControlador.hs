@@ -19,3 +19,8 @@ nuevoProgramCounter otroPC microControlador = microControlador {programCounter =
 nuevaEtiqueta otraEtiqueta microControlador = microControlador {etiqueta = otraEtiqueta}
 
 xT8088 = MicroControlador [] 0 0 0 ""
+
+type Instrucción = MicroControlador -> MicroControlador
+
+nop :: Instrucción
+nop micro = nuevoProgramCounter (programCounter micro + 1) micro
