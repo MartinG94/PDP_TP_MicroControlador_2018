@@ -16,7 +16,7 @@ nuevaMemoria otraMemoria microControlador = microControlador {memoria = otraMemo
 nuevoAcum_A otroAcum_A microControlador = microControlador {acumulador_A = otroAcum_A}
 nuevoAcum_B otroAcum_B microControlador = microControlador {acumulador_B = otroAcum_B}
 nuevoProgramCounter otroPC microControlador = microControlador {programCounter = otroPC}
-nuevaEtiqueta otraEtiqueta microControlador = microControlador {etiqueta = otraEtiqueta}
+nuevaEtiqueta otraEtiqueta microControlador = microControlador {mensajeError = otraEtiqueta}
 
 xt8088 = MicroControlador [] 0 0 0 ""
 
@@ -45,7 +45,7 @@ lod unaPosición micro = (nop . nuevoAcum_A ( (!!) (memoria micro) (unaPosición
 divide :: Instrucción
 divide micro
   | (not . (==0) . acumulador_B) micro = (nop . nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro `div` acumulador_B micro)) micro
-  | otherwise = error "DIVISION BY ZERO"
+  | otherwise = nuevaEtiqueta "DIVISION BY ZERO" micro
 
 fp20 = MicroControlador [] 7 24 0 ""
 at8086 = MicroControlador [1.. 20] 0 0 0 ""
