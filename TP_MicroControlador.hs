@@ -24,3 +24,12 @@ type Instrucción = MicroControlador -> MicroControlador
 
 nop :: Instrucción
 nop micro = nuevoProgramCounter (programCounter micro + 1) micro
+
+lovd :: Int -> Instrucción
+lovd unValor micro = (nop . nuevoAcum_A unValor) micro
+
+swap :: Instrucción
+swap micro = (nop . nuevoAcum_A (acumulador_B micro) . nuevoAcum_B (acumulador_A micro)) micro
+
+add :: Instrucción
+add micro = (nop . nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro + acumulador_B micro)) micro
