@@ -49,3 +49,12 @@ divide micro
 
 fp20 = MicroControlador [] 7 24 0 ""
 at8086 = MicroControlador [1.. 20] 0 0 0 ""
+
+testsPrimeraEntrega = hspec $ do
+  describe "Probando las instrucciones." $ do
+    it "Se modela un programa que haga avanzar tres posiciones el program counter." $
+      (programCounter.nop.nop.nop) xt8088 `shouldBe` 3
+    it "Se modela un programa que permite sumar 10 + 22." $
+      (acumulador_A . add . lodv 22 . swap . lodv 10) xt8088 `shouldBe` 32
+    it "Se modela un programa que intenta dividir 2 por 0." $
+      (mensajeError . divide . lod 1 . swap . lod 2 . str 2 0 . str 1 2) xt8088 `shouldBe` "DIVISION BY ZERO"
