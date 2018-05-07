@@ -37,4 +37,7 @@ add micro = (nop . nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro + acumulador_
 type Posición = Int
 
 str :: Posición -> Int -> Instrucción
-str unaPosición unValor micro = nuevaMemoria (((take (unaPosición -1) (memoria micro)) ++ [unValor] ++ (drop unaPosición (memoria micro)))) micro
+str unaPosición unValor micro = (nop . nuevaMemoria ((take (unaPosición - 1) (memoria micro)) ++ [unValor] ++ (drop unaPosición (memoria micro)))) micro
+
+lod :: Posición -> Instrucción
+lod unaPosición micro = (nop . nuevoAcum_A ( (!!) (memoria micro) (unaPosición - 1) )) micro
