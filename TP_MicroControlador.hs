@@ -17,3 +17,5 @@ nuevoAcum_A otroAcum_A microControlador = microControlador {acumulador_A = otroA
 nuevoAcum_B otroAcum_B microControlador = microControlador {acumulador_B = otroAcum_B}
 nuevoProgramCounter otroPC microControlador = microControlador {programCounter = otroPC}
 nuevaEtiqueta otraEtiqueta microControlador = microControlador {etiqueta = otraEtiqueta}
+
+xT8088 = MicroControlador [] 0 0 0 ""
