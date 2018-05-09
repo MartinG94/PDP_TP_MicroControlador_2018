@@ -61,7 +61,7 @@ sumar10Y22 :: Programa
 sumar10Y22 = [lodv 10 , swap , lodv 22 , add]
 
 diviciónDe2Por0 :: Programa
-diviciónDe2Por0 = [str 1 2 . str 2 0 . lod 2 . swap . lod 1 . divide]
+diviciónDe2Por0 = [str 1 2 , str 2 0 , lod 2 , swap , lod 1 , divide]
 
 diviciónDe12Por4 :: Programa
 diviciónDe12Por4 = [str 1 12, str 2 4 , lod 2 , swap , lod 1 , divide]
@@ -71,3 +71,5 @@ diviciónDe12Por4 = [str 1 12, str 2 4 , lod 2 , swap , lod 1 , divide]
 agregarPrograma unPrograma micro = micro {programas = programas micro ++ [unPrograma]}
 
 cargar unPrograma = agregarPrograma unPrograma
+
+ejecutarInstrucción unaInstrucción = nop . unaInstrucción
