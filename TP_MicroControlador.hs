@@ -21,6 +21,7 @@ nuevaEtiqueta otraEtiqueta microControlador = microControlador {mensajeError = o
 xt8088 = MicroControlador [] 0 0 0 ""
 
 type Instrucción = MicroControlador -> MicroControlador
+type Programa = MicroControlador -> MicroControlador
 
 nop :: Instrucción
 nop micro = nuevoProgramCounter (programCounter micro + 1) micro
@@ -50,7 +51,14 @@ divide micro
 fp20 = MicroControlador [] 7 24 0 ""
 at8086 = MicroControlador [1.. 20] 0 0 0 ""
 
+avanzarTresPosiciones :: Programa
 avanzarTresPosiciones = nop.nop.nop
+
+sumar10Y22 :: Programa
 sumar10Y22 = add . lodv 22 . swap . lodv 10
-intentarDividir2por0 = divide . lod 1 . swap . lod 2 . str 2 0 . str 1 2
+
+intentarDividir2Por0 :: Programa
+intentarDividir2Por0 = divide . lod 1 . swap . lod 2 . str 2 0 . str 1 2
+
+dividir12Por4 :: Programa
 dividir12Por4 = divide . lod 1 . swap . lod 2 . str 2 4 . str 1 12
