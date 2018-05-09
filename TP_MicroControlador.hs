@@ -12,7 +12,7 @@ data MicroControlador = MicroControlador {
   acumulador_B :: Int,
   programCounter :: Int,
   mensajeError :: String,
-  programas :: [Programa]
+  programas :: Programa
 } deriving(Show)
 
 nuevaMemoria otraMemoria micro = micro {memoria = otraMemoria}
@@ -68,10 +68,13 @@ diviciónDe12Por4 = [str 1 12, str 2 4 , lod 2 , swap , lod 1 , divide]
 
 -- 2da Parte
 
-agregarPrograma unPrograma micro = micro {programas = programas micro ++ [unPrograma]}
+agregarPrograma unPrograma micro = micro {programas = programas micro ++ unPrograma}
 
 cargar :: Programa -> MicroControlador -> MicroControlador
 cargar unPrograma = agregarPrograma unPrograma
 
 ejecutarInstrucción :: Instrucción -> MicroControlador -> MicroControlador
 ejecutarInstrucción unaInstrucción = nop . unaInstrucción
+
+ejecutarPrograma :: MicroControlador -> MicroControlador
+ejecutarPrograma unMicro = foldr ejecutarInstrucción unMicro (programas unMicro)
