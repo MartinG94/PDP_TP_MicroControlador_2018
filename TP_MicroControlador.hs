@@ -40,11 +40,19 @@ add micro = (nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro + acumulador_B micr
 
 type Posición = Int
 
+agregar :: Posición -> Int -> [Int] -> [Int]
+agregar enPosición unValor lista = (take (enPosición - 1) lista) ++ [unValor] ++ (drop (enPosición - 1) lista)
+
 str :: Posición -> Int -> Instrucción
-str unaPosición unValor micro = (nuevaMemoria ((take (unaPosición - 1) (memoria micro)) ++ [unValor] ++ (drop unaPosición (memoria micro)))) micro
+str unaPosición unValor micro = nuevaMemoria (agregar unaPosición unValor (memoria micro)) micro
+
+obtenerElemento :: Posición -> [Int] -> Int
+obtenerElemento posición lista
+  | (not . (==0)) posición && (<=(length lista)) posición = (flip (!!)) (posición - 1) lista
+  | otherwise = error "No existe la posición de memoria solicitada"
 
 lod :: Posición -> Instrucción
-lod unaPosición micro = (nuevoAcum_A ((!!) (memoria micro) (unaPosición - 1))) micro
+lod unaPosición micro = nuevoAcum_A (obtenerElemento unaPosición (memoria micro)) micro
 
 divide :: Instrucción
 divide micro
@@ -60,11 +68,11 @@ avanzarTresPosiciones = [nop, nop, nop]
 sumar10Y22 :: Programa
 sumar10Y22 = [lodv 10 , swap , lodv 22 , add]
 
-diviciónDe2Por0 :: Programa
-diviciónDe2Por0 = [str 1 2 , str 2 0 , lod 2 , swap , lod 1 , divide]
+divisiónDe2Por0 :: Programa
+divisiónDe2Por0 = [str 1 2 , str 2 0 , lod 2 , swap , lod 1 , divide]
 
-diviciónDe12Por4 :: Programa
-diviciónDe12Por4 = [str 1 12, str 2 4 , lod 2 , swap , lod 1 , divide]
+divisiónDe12Por4 :: Programa
+divisiónDe12Por4 = [str 1 12, str 2 4 , lod 2 , swap , lod 1 , divide]
 
 -- 2da Parte
 
@@ -77,4 +85,4 @@ ejecutarInstrucción :: Instrucción -> MicroControlador -> MicroControlador
 ejecutarInstrucción unaInstrucción = nop . unaInstrucción
 
 ejecutarPrograma :: MicroControlador -> MicroControlador
-ejecutarPrograma unMicro = foldr ejecutarInstrucción unMicro (programas unMicro)
+ejecutarPrograma unMicro = foldl (flip ejecutarInstrucción) unMicro (programas unMicro)
