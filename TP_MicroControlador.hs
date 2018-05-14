@@ -112,6 +112,16 @@ ifnz (unaInstrucción : otraInstrucción) micro
   | (/=0) (acumulador_A micro) = ifnz otraInstrucción (ejecutar micro unaInstrucción)
   | otherwise = ifnz otraInstrucción micro
 
+pruebasConIfnz = hspec $ do
+  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador A sea 24" $
+    (acumulador_A . ifnz [lodv 3, swap]) fp20 `shouldBe` 24
+  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador B sea 3" $
+    (acumulador_B . ifnz [lodv 3, swap]) fp20 `shouldBe` 3
+  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
+    (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
+  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
+    (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
+
 esInnecesariaPara micro instrucción =
   ((==0) . acumulador_A) (ejecutar micro instrucción) &&
   ((==0) . acumulador_B) (ejecutar micro instrucción) &&
