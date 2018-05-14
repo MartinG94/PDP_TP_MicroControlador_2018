@@ -51,7 +51,7 @@ str unaPosición unValor micro = nuevaMemoria (agregar (memoria micro) unaPosici
 
 obtenerElemento :: Posición -> [Int] -> Int
 obtenerElemento posición lista
-  | (>= 1) posición && (>=(length lista)) posición = (flip (!!)) (posición - 1) lista
+  | (>= 1) posición && (<=(length lista)) posición = (flip (!!)) (posición - 1) lista
   | otherwise = error "No existe la posición de memoria solicitada"
 
 lod :: Posición -> Instrucción
@@ -89,6 +89,22 @@ ejecutar enMicro laInstrucción = (nop . laInstrucción) enMicro
 
 ejecutarPrograma :: MicroControlador -> MicroControlador
 ejecutarPrograma unMicro = foldl ejecutar unMicro (programa unMicro)
+
+pruebasConProgramas = hspec $ do
+  it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su acumulador A sea 32" $
+    (acumulador_A . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 32
+  it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su acumulador B sea 32" $
+    (acumulador_B . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 0
+  it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su program counter sea 32" $
+    (programCounter . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 4
+  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su acumulador A sea 2" $
+    (acumulador_A . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 2
+  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su acumulador B sea 0" $
+    (acumulador_B . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 0
+  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su mensaje de error sea DIVISION BY ZERO" $
+    (mensajeError . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` "DIVISION BY ZERO"
+  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su program counter sea 6" $
+    (programCounter . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 6
 
 ifnz :: Programa -> MicroControlador -> MicroControlador
 ifnz [] micro = micro
