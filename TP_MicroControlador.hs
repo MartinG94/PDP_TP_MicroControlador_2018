@@ -91,20 +91,21 @@ ejecutarPrograma :: MicroControlador -> MicroControlador
 ejecutarPrograma unMicro = foldl ejecutar unMicro (programa unMicro)
 
 pruebasConProgramas = hspec $ do
-  it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su acumulador A sea 32" $
-    (acumulador_A . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 32
-  it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su acumulador B sea 32" $
-    (acumulador_B . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 0
-  it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su program counter sea 32" $
-    (programCounter . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 4
-  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su acumulador A sea 2" $
-    (acumulador_A . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 2
-  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su acumulador B sea 0" $
-    (acumulador_B . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 0
-  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su mensaje de error sea DIVISION BY ZERO" $
-    (mensajeError . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` "DIVISION BY ZERO"
-  it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su program counter sea 6" $
-    (programCounter . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 6
+  describe "Se realizan pruebas con los programas" $ do
+    it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su acumulador A sea 32" $
+      (acumulador_A . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 32
+    it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su acumulador B sea 32" $
+      (acumulador_B . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 0
+    it "Cargar y ejecutar el programa sumar10Y22 a xt8088 genera que su program counter sea 32" $
+      (programCounter . ejecutarPrograma . cargar sumar10Y22) xt8088 `shouldBe` 4
+    it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su acumulador A sea 2" $
+      (acumulador_A . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 2
+    it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su acumulador B sea 0" $
+      (acumulador_B . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 0
+    it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su mensaje de error sea DIVISION BY ZERO" $
+      (mensajeError . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` "DIVISION BY ZERO"
+    it "Cargar y ejecutar el programa divisiónDe2Por0 a xt8088 genera que su program counter sea 6" $
+      (programCounter . ejecutarPrograma . cargar divisiónDe2Por0) xt8088 `shouldBe` 6
 
 ifnz :: Programa -> MicroControlador -> MicroControlador
 ifnz [] micro = micro
@@ -113,14 +114,15 @@ ifnz (unaInstrucción : otraInstrucción) micro
   | otherwise = ifnz otraInstrucción micro
 
 pruebasConIfnz = hspec $ do
-  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador A sea 24" $
-    (acumulador_A . ifnz [lodv 3, swap]) fp20 `shouldBe` 24
-  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador B sea 3" $
-    (acumulador_B . ifnz [lodv 3, swap]) fp20 `shouldBe` 3
-  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
-    (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
-  it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
-    (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
+  describe "Se realizan pruebas con la función ifnz" $ do
+    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador A sea 24" $
+      (acumulador_A . ifnz [lodv 3, swap]) fp20 `shouldBe` 24
+    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador B sea 3" $
+      (acumulador_B . ifnz [lodv 3, swap]) fp20 `shouldBe` 3
+    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
+      (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
+    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
+      (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
 
 esInnecesariaPara micro instrucción =
   ((==0) . acumulador_A) (ejecutar micro instrucción) &&
@@ -132,9 +134,29 @@ pruebaDepurar = [swap, nop, lodv 133, lodv 0, str 1 3, str 2 0]
 depurar :: Programa -> MicroControlador -> Programa
 depurar unPrograma micro = filter (not . esInnecesariaPara micro) unPrograma
 
+pruebaConDepurar = hspec $ do
+  describe "Se realiza una prueba con la función depurar" $ do
+    it "Depurar el las instrucciones swap, nop, lodv 133, lodv 0, str 1 3, str 2 0. Sólo quedan 2 instrucciones" $
+      (length . depurar [swap, nop, lodv 133, lodv 0, str 1 3, str 2 0]) xt8088 `shouldBe` 2
+
 listaOrdenada [] = True
 listaOrdenada [x] = True
 listaOrdenada (cab1 : cab2 : cola) = cab1 <= cab2 && listaOrdenada (cab2:cola)
 
 laMemoriaEstáOrdenada :: MicroControlador -> Bool
 laMemoriaEstáOrdenada micro = listaOrdenada (memoria micro)
+
+microDesorden = MicroControlador [2,5,1,0,6,9] 0 0 0 "" []
+
+pruebasConLaMemoria = hspec $ do
+  describe "Se realizan pruebas con el orden de la memoria" $ do
+    it "La memoria de at8086 está ordenada" $
+      laMemoriaEstáOrdenada at8086 `shouldBe` True
+    it "La memoria de microDesorden no está ordenada" $
+      laMemoriaEstáOrdenada microDesorden `shouldBe` False
+
+ejecutarTests = do
+  pruebasConProgramas
+  pruebasConIfnz
+  pruebaConDepurar
+  pruebasConLaMemoria
