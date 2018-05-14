@@ -48,7 +48,7 @@ str unaPosición unValor micro = nuevaMemoria (agregar unaPosición unValor (mem
 
 obtenerElemento :: Posición -> [Int] -> Int
 obtenerElemento posición lista
-  | (not . (==0)) posición && (<=(length lista)) posición = (flip (!!)) (posición - 1) lista
+  | (>= 1) posición && (<=(length lista)) posición = (flip (!!)) (posición - 1) lista
   | otherwise = error "No existe la posición de memoria solicitada"
 
 lod :: Posición -> Instrucción
@@ -76,10 +76,10 @@ divisiónDe12Por4 = [str 1 12, str 2 4 , lod 2 , swap , lod 1 , divide]
 
 -- 2da Parte
 
-agregarPrograma unPrograma micro = micro {programas = programas micro ++ unPrograma}
+nuevoPrograma unPrograma micro = micro {programas = unPrograma}
 
 cargar :: Programa -> MicroControlador -> MicroControlador
-cargar unPrograma = agregarPrograma unPrograma
+cargar unPrograma = nuevoPrograma unPrograma
 
 ejecutarInstrucción :: Instrucción -> MicroControlador -> MicroControlador
 ejecutarInstrucción unaInstrucción = nop . unaInstrucción
