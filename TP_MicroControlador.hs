@@ -39,16 +39,19 @@ add :: Instrucción
 add micro = (nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro + acumulador_B micro)) micro
 
 type Posición = Int
+type Valor = Int
 
-agregar :: Posición -> Int -> [Int] -> [Int]
-agregar enPosición unValor lista = (take (enPosición - 1) lista) ++ [unValor] ++ (drop (enPosición - 1) lista)
+agregar :: [Int] -> Posición -> Valor -> [Int]
+agregar lista posición unValor
+  | (posición - 1) >= 0 = (take (posición -1) lista) ++ [unValor] ++ (drop posición lista)
+  | otherwise = lista
 
 str :: Posición -> Int -> Instrucción
-str unaPosición unValor micro = nuevaMemoria (agregar unaPosición unValor (memoria micro)) micro
+str unaPosición unValor micro = nuevaMemoria (agregar (memoria micro) unaPosición unValor) micro
 
 obtenerElemento :: Posición -> [Int] -> Int
 obtenerElemento posición lista
-  | (>= 1) posición && (<=(length lista)) posición = (flip (!!)) (posición - 1) lista
+  | (>= 1) posición && (>=(length lista)) posición = (flip (!!)) (posición - 1) lista
   | otherwise = error "No existe la posición de memoria solicitada"
 
 lod :: Posición -> Instrucción
@@ -92,3 +95,20 @@ ifnz [] micro = micro
 ifnz (unaInstrucción : otraInstrucción) micro
   | (/=0) (acumulador_A micro) = ifnz otraInstrucción (ejecutar micro unaInstrucción)
   | otherwise = ifnz otraInstrucción micro
+
+esInnecesariaPara micro instrucción =
+  ((==0) . acumulador_A) (ejecutar micro instrucción) &&
+  ((==0) . acumulador_B) (ejecutar micro instrucción) &&
+  ((==0) . sum . memoria) (ejecutar micro instrucción)
+
+pruebaDepurar = [swap, nop, lodv 133, lodv 0, str 1 3, str 2 0]
+
+depurar :: Programa -> MicroControlador -> Programa
+depurar unPrograma micro = filter (not . esInnecesariaPara micro) unPrograma
+
+listaOrdenada [] = True
+listaOrdenada [x] = True
+listaOrdenada (cab1 : cab2 : cola) = cab1 <= cab2 && listaOrdenada (cab2:cola)
+
+laMemoriaEstáOrdenada :: MicroControlador -> Bool
+laMemoriaEstáOrdenada micro = listaOrdenada (memoria micro)
