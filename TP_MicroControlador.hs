@@ -81,8 +81,11 @@ nuevoPrograma unPrograma micro = micro {programas = unPrograma}
 cargar :: Programa -> MicroControlador -> MicroControlador
 cargar unPrograma = nuevoPrograma unPrograma
 
-ejecutarInstrucción :: Instrucción -> MicroControlador -> MicroControlador
-ejecutarInstrucción unaInstrucción = nop . unaInstrucción
+ejecutarInstrucción :: MicroControlador -> Instrucción -> MicroControlador
+ejecutarInstrucción micro unaInstrucción = (nop . unaInstrucción) micro
 
 ejecutarPrograma :: MicroControlador -> MicroControlador
-ejecutarPrograma unMicro = foldl (flip ejecutarInstrucción) unMicro (programas unMicro)
+ejecutarPrograma unMicro = foldl ejecutarInstrucción unMicro (programas unMicro)
+
+ifnz :: Programa -> MicroControlador -> Programa
+ifnz unPrograma micro = filter (not . (==0) . acumulador_A . ejecutarInstrucción micro) unPrograma
