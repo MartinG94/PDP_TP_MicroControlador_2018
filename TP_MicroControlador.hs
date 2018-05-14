@@ -65,6 +65,21 @@ divide micro
 fp20 = MicroControlador [] 7 24 0 "" []
 at8086 = MicroControlador [1.. 20] 0 0 0 "" []
 
+pruebasConInstrucciones = hspec $ do
+  describe "Se realizan pruebas con las intrucciones" $ do
+    it "Se ejecuta un nop 3 veces en xt8088, se espera que el program counter sea 3" $
+      (programCounter . nop . nop . nop) xt8088 `shouldBe` 3
+    it "Se ejecuta un lodv 5 en xt8088, se espera que el acumulador A sea 5" $
+      (acumulador_A . lodv 5) xt8088 `shouldBe` 5
+    it "Se ejecuta un swap en fp20, se espera que el acumulador A sea 24" $
+      (acumulador_A . swap) fp20 `shouldBe` 24
+    it "Se ejecuta un swap en fp20, se espera que el acumulador B sea 7" $
+      (acumulador_B . swap) fp20 `shouldBe` 7
+    it "Se ejecuta un str 2 5 en at8086, se espera que el elemento 2 de su memoria sea 5" $
+      (obtenerElemento 2 . memoria . str 2 5) at8086 `shouldBe` 5
+    it "Se ejecuta un lod 2 en xt8088 con una memoria de 1024 posiciones con valor 0. Su acumulador A debería ser 0" $
+      (acumulador_A . lod 2. nuevaMemoria (take 1024 [0, 0..])) xt8088 `shouldBe` 0
+
 avanzarTresPosiciones :: Programa
 avanzarTresPosiciones = [nop, nop, nop]
 
@@ -156,6 +171,7 @@ pruebasConLaMemoria = hspec $ do
       laMemoriaEstáOrdenada microDesorden `shouldBe` False
 
 ejecutarTests = do
+  pruebasConInstrucciones
   pruebasConProgramas
   pruebasConIfnz
   pruebaConDepurar
