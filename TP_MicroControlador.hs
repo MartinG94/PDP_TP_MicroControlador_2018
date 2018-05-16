@@ -6,12 +6,18 @@ import Test.Hspec
 
 -- 1ra Parte
 
+type Valor = Int
+type Memoria = [Valor]
+type Leyenda = String
+type Instrucción = MicroControlador -> MicroControlador
+type Programa = [Instrucción]
+
 data MicroControlador = MicroControlador {
-  memoria :: [Int],
-  acumulador_A :: Int,
-  acumulador_B :: Int,
-  programCounter :: Int,
-  mensajeError :: String,
+  memoria :: Memoria,
+  acumulador_A :: Valor,
+  acumulador_B :: Valor,
+  programCounter :: Valor,
+  mensajeError :: Leyenda,
   programa :: Programa
 } deriving(Show)
 
@@ -23,13 +29,12 @@ nuevaEtiqueta otraEtiqueta micro = micro {mensajeError = otraEtiqueta}
 
 xt8088 = MicroControlador [] 0 0 0 "" []
 
-type Instrucción = MicroControlador -> MicroControlador
-type Programa = [Instrucción]
+type Posición = Int
 
 nop :: Instrucción
 nop micro = nuevoProgramCounter (programCounter micro + 1) micro
 
-lodv :: Int -> Instrucción
+lodv :: Valor -> Instrucción
 lodv unValor micro = nuevoAcum_A unValor micro
 
 swap :: Instrucción
@@ -38,18 +43,15 @@ swap micro = (nuevoAcum_A (acumulador_B micro) . nuevoAcum_B (acumulador_A micro
 add :: Instrucción
 add micro = (nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro + acumulador_B micro)) micro
 
-type Posición = Int
-type Valor = Int
-
-agregar :: [Int] -> Posición -> Valor -> [Int]
+agregar :: Memoria -> Posición -> Valor -> Memoria
 agregar lista posición unValor
   | (posición - 1) >= 0 = (take (posición -1) lista) ++ [unValor] ++ (drop posición lista)
   | otherwise = lista
 
-str :: Posición -> Int -> Instrucción
+str :: Posición -> Valor -> Instrucción
 str unaPosición unValor micro = nuevaMemoria (agregar (memoria micro) unaPosición unValor) micro
 
-obtenerElemento :: Posición -> [Int] -> Int
+obtenerElemento :: Posición -> Memoria -> Valor
 obtenerElemento posición lista
   | (>= 1) posición && (<=(length lista)) posición = (flip (!!)) (posición - 1) lista
   | otherwise = error "No existe la posición de memoria solicitada"
@@ -136,15 +138,15 @@ pruebasConIfnz = hspec $ do
       (acumulador_B . ifnz [lodv 3, swap]) fp20 `shouldBe` 3
     it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
       (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
-    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0" $
-      (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
+    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador B sea 0" $
+      (acumulador_B . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
 
 esInnecesariaPara micro instrucción =
   ((==0) . acumulador_A) (ejecutar micro instrucción) &&
   ((==0) . acumulador_B) (ejecutar micro instrucción) &&
   ((==0) . sum . memoria) (ejecutar micro instrucción)
 
-pruebaDepurar = [swap, nop, lodv 133, lodv 0, str 1 3, str 2 0]
+programaADepurar = [swap, nop, lodv 133, lodv 0, str 1 3, str 2 0]
 
 depurar :: Programa -> MicroControlador -> Programa
 depurar unPrograma micro = filter (not . esInnecesariaPara micro) unPrograma
@@ -152,14 +154,15 @@ depurar unPrograma micro = filter (not . esInnecesariaPara micro) unPrograma
 pruebaConDepurar = hspec $ do
   describe "Se realiza una prueba con la función depurar" $ do
     it "Depurar el las instrucciones swap, nop, lodv 133, lodv 0, str 1 3, str 2 0. Sólo quedan 2 instrucciones" $
-      (length . depurar [swap, nop, lodv 133, lodv 0, str 1 3, str 2 0]) xt8088 `shouldBe` 2
+      (length . depurar programaADepurar) xt8088 `shouldBe` 2
 
-listaOrdenada [] = True
-listaOrdenada [x] = True
-listaOrdenada (cab1 : cab2 : cola) = cab1 <= cab2 && listaOrdenada (cab2:cola)
+listaOrdenadaDeMenorAMayor :: Memoria -> Bool
+listaOrdenadaDeMenorAMayor [] = True
+listaOrdenadaDeMenorAMayor [x] = True
+listaOrdenadaDeMenorAMayor (cab1 : cab2 : cola) = cab1 <= cab2 && listaOrdenadaDeMenorAMayor (cab2:cola)
 
 laMemoriaEstáOrdenada :: MicroControlador -> Bool
-laMemoriaEstáOrdenada micro = listaOrdenada (memoria micro)
+laMemoriaEstáOrdenada micro = listaOrdenadaDeMenorAMayor (memoria micro)
 
 microDesorden = MicroControlador [2,5,1,0,6,9] 0 0 0 "" []
 
