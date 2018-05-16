@@ -152,7 +152,7 @@ depurar :: Programa -> MicroControlador -> Programa
 depurar unPrograma micro = filter (not . esInnecesariaPara micro) unPrograma
 
 pruebaConDepurar = hspec $ do
-  describe "Se realiza una prueba con la función depurar" $ do
+  describe "Se depura un programa y se utiliza xt8088 para la prueba" $ do
     it "Depurar el las instrucciones swap, nop, lodv 133, lodv 0, str 1 3, str 2 0. Sólo quedan 2 instrucciones" $
       (length . depurar programaADepurar) xt8088 `shouldBe` 2
 
