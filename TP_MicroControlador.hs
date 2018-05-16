@@ -156,22 +156,30 @@ pruebaConDepurar = hspec $ do
     it "Depurar el las instrucciones swap, nop, lodv 133, lodv 0, str 1 3, str 2 0. Sólo quedan 2 instrucciones" $
       (length . depurar programaADepurar) xt8088 `shouldBe` 2
 
-listaOrdenadaDeMenorAMayor :: Memoria -> Bool
-listaOrdenadaDeMenorAMayor [] = True
-listaOrdenadaDeMenorAMayor [x] = True
-listaOrdenadaDeMenorAMayor (cab1 : cab2 : cola) = cab1 <= cab2 && listaOrdenadaDeMenorAMayor (cab2:cola)
+type Criterio = Valor -> Valor -> Bool
 
-laMemoriaEstáOrdenada :: MicroControlador -> Bool
-laMemoriaEstáOrdenada micro = listaOrdenadaDeMenorAMayor (memoria micro)
+menorAMayor :: Criterio
+menorAMayor = (<=)
+
+mayorAMenor :: Criterio
+mayorAMenor = (>=)
+
+listaOrdenadaDe :: Criterio -> Memoria -> Bool
+listaOrdenadaDe _ [] = True
+listaOrdenadaDe _ [x] = True
+listaOrdenadaDe criterio (cab1 : cab2 : cola) = criterio cab1 cab2 && listaOrdenadaDe criterio (cab2 : cola)
+
+memoriaOrdenadaSegún :: Criterio -> MicroControlador -> Bool
+memoriaOrdenadaSegún criterio micro = listaOrdenadaDe criterio (memoria micro)
 
 microDesorden = MicroControlador [2,5,1,0,6,9] 0 0 0 "" []
 
 pruebasConLaMemoria = hspec $ do
   describe "Se realizan pruebas con el orden de la memoria" $ do
     it "La memoria de at8086 está ordenada" $
-      laMemoriaEstáOrdenada at8086 `shouldBe` True
+      memoriaOrdenadaSegún menorAMayor at8086 `shouldBe` True
     it "La memoria de microDesorden no está ordenada" $
-      laMemoriaEstáOrdenada microDesorden `shouldBe` False
+      memoriaOrdenadaSegún menorAMayor microDesorden `shouldBe` False
 
 ejecutarTests = do
   pruebasConInstrucciones
