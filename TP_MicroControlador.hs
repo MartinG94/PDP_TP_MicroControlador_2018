@@ -173,6 +173,7 @@ memoriaOrdenadaSegún :: Criterio -> MicroControlador -> Bool
 memoriaOrdenadaSegún criterio micro = listaOrdenadaDe criterio (memoria micro)
 
 microDesorden = MicroControlador [2,5,1,0,6,9] 0 0 0 "" []
+microInfinito = MicroControlador [0..] 0 0 0 "" []
 
 pruebasConLaMemoria = hspec $ do
   describe "Se realizan pruebas con el orden de la memoria" $ do
@@ -180,6 +181,10 @@ pruebasConLaMemoria = hspec $ do
       memoriaOrdenadaSegún menorAMayor at8086 `shouldBe` True
     it "La memoria de microDesorden no está ordenada" $
       memoriaOrdenadaSegún menorAMayor microDesorden `shouldBe` False
+    it "Ejecutar el programa sumar10Y22 en el microInfinito genera que su acumulador A sea 32" $
+      (acumulador_A . ejecutarPrograma . cargar sumar10Y22) microDesorden `shouldBe` 32
+    it "Ejecutar el programa sumar10Y22 en el microInfinito genera que su acumulador B sea 0" $
+      (acumulador_B . ejecutarPrograma . cargar sumar10Y22) microDesorden `shouldBe` 0
 
 ejecutarTests = do
   pruebasConInstrucciones
