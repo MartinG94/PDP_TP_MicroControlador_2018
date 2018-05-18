@@ -22,8 +22,8 @@ data MicroControlador = MicroControlador {
 } deriving(Show)
 
 nuevaMemoria otraMemoria micro = micro {memoria = otraMemoria}
-nuevoAcum_A otroAcum_A micro = micro {acumulador_A = otroAcum_A}
-nuevoAcum_B otroAcum_B micro = micro {acumulador_B = otroAcum_B}
+nuevoAcumA otroAcum_A micro = micro {acumulador_A = otroAcum_A}
+nuevoAcumB otroAcum_B micro = micro {acumulador_B = otroAcum_B}
 nuevoProgramCounter otroPC micro = micro {programCounter = otroPC}
 nuevaEtiqueta otraEtiqueta micro = micro {mensajeError = otraEtiqueta}
 
@@ -44,21 +44,21 @@ pruebasNOP = hspec $ do
       (programCounter . nop . nop . nop) xt8088 `shouldBe` 3
 
 lodv :: Valor -> Instrucción
-lodv unValor micro = nuevoAcum_A unValor micro
+lodv unValor micro = nuevoAcumA unValor micro
 
 swap :: Instrucción
-swap micro = (nuevoAcum_A (acumulador_B micro) . nuevoAcum_B (acumulador_A micro)) micro
+swap micro = (nuevoAcumA (acumulador_B micro) . nuevoAcumB (acumulador_A micro)) micro
 
 add :: Instrucción
-add micro = (nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro + acumulador_B micro)) micro
+add micro = (nuevoAcumB 0 . nuevoAcumA (acumulador_A micro + acumulador_B micro)) micro
 
 pruebasConInstrucciones1 = hspec $ do
   describe "Tests Punto 3 - Tests de programa Sumar." $ do
-    it "Se ejecuta un lodv 5 en xt8088, se espera que el acumulador A sea 5." $
+    it "Se ejecuta un LODV 5 en xt8088, se espera que el acumulador A sea 5." $
       (acumulador_A . lodv 5) xt8088 `shouldBe` 5
-    it "Se ejecuta un swap en fp20, se espera que el acumulador A sea 24." $
+    it "Se ejecuta un SWAP en fp20, se espera que el acumulador A sea 24." $
       (acumulador_A . swap) fp20 `shouldBe` 24
-    it "Se ejecuta un swap en fp20, se espera que el acumulador B sea 7." $
+    it "Se ejecuta un SWAP en fp20, se espera que el acumulador B sea 7." $
       (acumulador_B . swap) fp20 `shouldBe` 7
     it "Suma 10 y 22 da 32 en el acumulador A." $
       (acumulador_A . add . lodv 22 . swap . lodv 10) xt8088 `shouldBe` 32
@@ -79,11 +79,11 @@ obtenerElemento posición lista
   | otherwise = 0
 
 lod :: Posición -> Instrucción
-lod unaPosición micro = nuevoAcum_A (obtenerElemento unaPosición (memoria micro)) micro
+lod unaPosición micro = nuevoAcumA (obtenerElemento unaPosición (memoria micro)) micro
 
 divide :: Instrucción
 divide micro
-  | (not . (==0) . acumulador_B) micro = (nuevoAcum_B 0 . nuevoAcum_A (acumulador_A micro `div` acumulador_B micro)) micro
+  | (not . (==0) . acumulador_B) micro = (nuevoAcumB 0 . nuevoAcumA (acumulador_A micro `div` acumulador_B micro)) micro
   | otherwise = nuevaEtiqueta "DIVISION BY ZERO" micro
 
 fp20 = MicroControlador [] 7 24 0 "" []
@@ -102,8 +102,8 @@ divisiónDe12Por4 :: Programa
 divisiónDe12Por4 = [str 1 12, str 2 4 , lod 2 , swap , lod 1 , divide]
 
 pruebasConInstrucciones2 = hspec $ do
-  describe "Tests Punto 4 - Tests de programa Division" $ do
-    it "Se ejecuta un str 2 5 en at8086, se espera que el elemento 2 de su memoria sea 5" $
+  describe "Tests Punto 4 - Tests de programa División." $ do
+    it "Se ejecuta un STR 2 5 en at8086, se espera que el elemento 2 de su memoria sea 5." $
       (obtenerElemento 2 . memoria . str 2 5) at8086 `shouldBe` 5
     it "LOD 2 de una memoria vacía debe dar 0." $
       (acumulador_A . lod 2) xt8088 `shouldBe` 0
@@ -113,7 +113,7 @@ pruebasConInstrucciones2 = hspec $ do
       (acumulador_A . divide . lod 1 . swap . lod 2 . str 2 4 . str 1 12) xt8088 `shouldBe` 3
     it "División de 12 por 4 deja en 0 el acumulador B." $
       (acumulador_B . divide . lod 1 . swap . lod 2 . str 2 4 . str 1 12) xt8088 `shouldBe` 0
-    it "Se ejecuta un lod 2 en xt8088 con una memoria de 1024 posiciones con valor 0. Su acumulador A debería ser 0" $
+    it "Se ejecuta un lod 2 en xt8088 con una memoria de 1024 posiciones con valor 0. Su acumulador A debería ser 0." $
       (acumulador_A . lod 2. nuevaMemoria (take 1024 [0, 0..])) xt8088 `shouldBe` 0
 
 -- 2da Parte
@@ -156,13 +156,13 @@ ifnz (unaInstrucción : otraInstrucción) micro
 
 pruebasConIfnz = hspec $ do
   describe "Tests Punto 2.3 - Tests de IFNZ." $ do
-    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador A sea 24." $
+    it "Ejecutar IFNZ en las instrucciones LODV 3 y SWAP sobre fp20 genera que su acumulador A sea 24." $
       (acumulador_A . ifnz [lodv 3, swap]) fp20 `shouldBe` 24
-    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre fp20 genera que su acumulador B sea 3." $
+    it "Ejecutar IFNZ en las instrucciones LODV 3 y SWAP sobre fp20 genera que su acumulador B sea 3." $
       (acumulador_B . ifnz [lodv 3, swap]) fp20 `shouldBe` 3
-    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador A sea 0." $
+    it "Ejecutar IFNZ en las instrucciones LODV 3 y SWAP sobre xt8088 genera que su acumulador A sea 0." $
       (acumulador_A . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
-    it "Ejecutar ifnz en las instrucciones lodv 3 y swap sobre xt8088 genera que su acumulador B sea 0." $
+    it "Ejecutar IFNZ en las instrucciones LODV 3 y SWAP sobre xt8088 genera que su acumulador B sea 0." $
       (acumulador_B . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
 
 esInnecesariaPara micro instrucción =
