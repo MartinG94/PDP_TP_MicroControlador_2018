@@ -215,6 +215,7 @@ pruebasConLaMemoria = hspec $ do
       (acumulador_B . ejecutarPrograma . cargar sumar10Y22) microInfinito `shouldBe` 0
 
 ejecutarTests = do
+  pruebasNOP
   pruebasConInstrucciones1
   pruebasConInstrucciones2
   pruebasConProgramas
