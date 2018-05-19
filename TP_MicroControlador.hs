@@ -29,8 +29,6 @@ nuevaEtiqueta otraEtiqueta micro = micro {mensajeError = otraEtiqueta}
 
 xt8088 = MicroControlador [] 0 0 0 "" []
 
-type Posición = Int
-
 nop :: Instrucción
 nop micro = nuevoProgramCounter (programCounter micro + 1) micro
 
@@ -60,10 +58,12 @@ pruebasConInstrucciones1 = hspec $ do
       (acumulador_A . swap) fp20 `shouldBe` 24
     it "Se ejecuta un SWAP en fp20, se espera que el acumulador B sea 7." $
       (acumulador_B . swap) fp20 `shouldBe` 7
-    it "Suma 10 y 22 da 32 en el acumulador A." $
+    it "Sumar 10 y 22 da 32 en el acumulador A." $
       (acumulador_A . add . lodv 22 . swap . lodv 10) xt8088 `shouldBe` 32
-    it "Suma 10 y 22 da 0 en el acumulador B." $
+    it "Sumar 10 y 22 da 0 en el acumulador B." $
       (acumulador_B . add . lodv 22 . swap . lodv 10) xt8088 `shouldBe` 0
+
+type Posición = Int
 
 agregar :: Memoria -> Posición -> Valor -> Memoria
 agregar lista posición unValor
@@ -83,7 +83,7 @@ lod unaPosición micro = nuevoAcumA (obtenerElemento unaPosición (memoria micro
 
 divide :: Instrucción
 divide micro
-  | (not . (==0) . acumulador_B) micro = (nuevoAcumB 0 . nuevoAcumA (acumulador_A micro `div` acumulador_B micro)) micro
+  | ((/=0) . acumulador_B) micro = (nuevoAcumB 0 . nuevoAcumA (acumulador_A micro `div` acumulador_B micro)) micro
   | otherwise = nuevaEtiqueta "DIVISION BY ZERO" micro
 
 fp20 = MicroControlador [] 7 24 0 "" []
@@ -150,9 +150,9 @@ pruebasConProgramas = hspec $ do
 
 ifnz :: Programa -> MicroControlador -> MicroControlador
 ifnz [] micro = micro
-ifnz (unaInstrucción : otraInstrucción) micro
-  | (/=0) (acumulador_A micro) = ifnz otraInstrucción (ejecutar micro unaInstrucción)
-  | otherwise = ifnz otraInstrucción micro
+ifnz (unaInstrucción : lasInstrucciones) micro
+  | ((/=0) . acumulador_A) micro = ifnz lasInstrucciónes (ejecutar micro unaInstrucción)
+  | otherwise = ifnz lasInstrucciones micro
 
 pruebasConIfnz = hspec $ do
   describe "Tests Punto 2.3 - Tests de IFNZ." $ do
@@ -165,15 +165,14 @@ pruebasConIfnz = hspec $ do
     it "Ejecutar IFNZ en las instrucciones LODV 3 y SWAP sobre xt8088 genera que su acumulador B sea 0." $
       (acumulador_B . ifnz [lodv 3, swap]) xt8088 `shouldBe` 0
 
-esInnecesariaPara micro instrucción =
-  ((==0) . acumulador_A) (ejecutar micro instrucción) &&
-  ((==0) . acumulador_B) (ejecutar micro instrucción) &&
-  ((==0) . sum . memoria) (ejecutar micro instrucción)
-
+programaADepurar :: Programa
 programaADepurar = [swap, nop, lodv 133, lodv 0, str 1 3, str 2 0]
 
+totalValores :: MicroControlador -> Valor
+totalValores micro = acumulador_A micro + acumulador_B micro + (sum . memoria) micro
+
 depurar :: Programa -> MicroControlador -> Programa
-depurar unPrograma micro = filter (not . esInnecesariaPara micro) unPrograma
+depurar unPrograma micro = filter (\ instrucción -> totalValores (ejecutar micro instrucción) > 0) unPrograma
 
 pruebasConDepurar = hspec $ do
   describe "Tests Punto 2.4 - Depuración de un Programa." $ do
