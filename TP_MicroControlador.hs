@@ -151,7 +151,7 @@ pruebasConProgramas = hspec $ do
 ifnz :: Programa -> MicroControlador -> MicroControlador
 ifnz [] micro = micro
 ifnz (unaInstrucción : lasInstrucciones) micro
-  | ((/=0) . acumulador_A) micro = ifnz lasInstrucciónes (ejecutar micro unaInstrucción)
+  | ((/=0) . acumulador_A) micro = ifnz lasInstrucciones (ejecutar micro unaInstrucción)
   | otherwise = ifnz lasInstrucciones micro
 
 pruebasConIfnz = hspec $ do
